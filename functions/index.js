@@ -9,6 +9,7 @@ const functions = require("firebase-functions");
 // });""
 const axios = require("axios");
 const https = require("https");
+const {Buffer} = require("buffer");
 
 const agent = new https.Agent({
   rejectUnauthorized: false,
@@ -141,6 +142,88 @@ exports.sendBase64ToServer = functions.https.onCall(async (data, context) => {
     const breed = response.data;
     // Return the response from the server to the client
     return {breed};
+  } catch (error) {
+    console.error(error);
+    throw new functions.https.HttpsError(
+        "internal", "Failed to get response from AI server");
+  }
+});
+
+
+exports.similarityCheck = functions.https.onCall(async (data, context) => {
+  // 쿼리한 이미지 리스트
+  const targetImage = data.target_image;
+  const queryImages = data.query_images || [];
+  // 인터넷이미지 다운 후 base64 인코딩
+  // const encodeImageToBase64 = async (imageUrl) => {
+  //   try {
+  //     const options = {responseType: "arraybuffer"};
+  //     const response = await axios.get(imageUrl, options);
+  //     const buffer = Buffer.from(response.data, "binary");
+  //     const base64Data = buffer.toString("base64");
+  //     return base64Data;
+  //   } catch (error) {
+  //     console.error("Failed to encode image:", error);
+  //     return null;
+  //   }
+  // };
+  // const encodeImagesToBase64 = async (imageUrlList) => {
+  //   try {
+  //     const encodedImageList = await Promise.all(
+  //         imageUrlList.map(async (imageUrl) => {
+  //           const options = {responseType: "arraybuffer"};
+  //           const response = await axios.get(imageUrl, options);
+  //           const buffer = Buffer.from(response.data, "binary");
+  //           return buffer.toString("base64");
+  //         }));
+  //     return encodedImageList;
+  //   } catch (error) {
+  //     console.error(error);
+  //     return null;
+  //   }
+  // };
+  const encodeToBase64 = async (data) => {
+    try {
+      const options = {responseType: "arraybuffer"};
+      const response = await axios.get(data, options);
+      const buffer = Buffer.from(response.data, "binary");
+      const base64Data = buffer.toString("base64");
+      return base64Data;
+    } catch (error) {
+      console.error("Failed to encode data:", error);
+      return null;
+    }
+  };
+  // 쿼리한 이미지들을 인코드
+  const encodedTarget = await encodeToBase64(targetImage)
+      .then((base64Image) => {
+        console.log("Base64 encoded image:", base64Image);
+        return base64Image;
+      })
+      .catch((error) => {
+        console.error("Failed to encode image:", error);
+        throw error;
+      });
+  const encodedList = await Promise.all(queryImages.map(encodeToBase64))
+      .then((encodedImages) => {
+        console.log("Base64 encoded images:", encodedImages);
+        return encodedImages;
+      })
+      .catch((error) => {
+        console.error("Failed to encode images:", error);
+        throw error;
+      });
+  const sendingData = {
+    target_image: encodedTarget,
+    query_images: encodedList,
+  };
+  try {
+    const serverUrl = "http://218.101.195.205:5000/sim";
+    const response = await axios.post(serverUrl, sendingData);
+    const similarArray = response.data;
+    // Return the response from the server to the client
+    console.log("similarArray result", similarArray);
+    return {similarArray};
   } catch (error) {
     console.error(error);
     throw new functions.https.HttpsError(
