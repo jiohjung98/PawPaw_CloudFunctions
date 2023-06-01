@@ -20,6 +20,13 @@
 .history
 .ionide
 
+cmd.exe
 capston-jioh-firebase-adminsdk-q8esd-ceddda10b0.json
+/functions/.runtimeconfig.json
+package_lock.json
+functions/package_lock.json
+
+# node_modules/
+# functions/node_modules/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode

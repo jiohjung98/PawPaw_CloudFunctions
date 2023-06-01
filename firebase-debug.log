@@ -1,0 +1,21 @@
+[debug] [2023-06-01T07:35:03.544Z] ----------------------------------------------------------------------
+[debug] [2023-06-01T07:35:03.545Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\SG\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js functions:config:get
+[debug] [2023-06-01T07:35:03.545Z] CLI Version:   11.24.1
+[debug] [2023-06-01T07:35:03.546Z] Platform:      win32
+[debug] [2023-06-01T07:35:03.546Z] Node Version:  v18.15.0
+[debug] [2023-06-01T07:35:03.546Z] Time:          Thu Jun 01 2023 16:35:03 GMT+0900 (대한민국 표준시)
+[debug] [2023-06-01T07:35:03.547Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-06-01T07:35:03.601Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-06-01T07:35:03.601Z] > authorizing via signed-in user (miller198@hanyang.ac.kr)
+[debug] [2023-06-01T07:35:03.602Z] [iam] checking project capston-jioh for permissions ["firebase.projects.get","runtimeconfig.configs.get","runtimeconfig.configs.list","runtimeconfig.variables.get","runtimeconfig.variables.list"]
+[debug] [2023-06-01T07:35:03.603Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/capston-jioh:testIamPermissions [none]
+[debug] [2023-06-01T07:35:03.604Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/capston-jioh:testIamPermissions x-goog-quota-user=projects/capston-jioh
+[debug] [2023-06-01T07:35:03.604Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/capston-jioh:testIamPermissions {"permissions":["firebase.projects.get","runtimeconfig.configs.get","runtimeconfig.configs.list","runtimeconfig.variables.get","runtimeconfig.variables.list"]}
+[debug] [2023-06-01T07:35:04.380Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/capston-jioh:testIamPermissions 200
+[debug] [2023-06-01T07:35:04.380Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/capston-jioh:testIamPermissions {"permissions":["firebase.projects.get","runtimeconfig.configs.get","runtimeconfig.configs.list","runtimeconfig.variables.get","runtimeconfig.variables.list"]}
+[debug] [2023-06-01T07:35:04.381Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/capston-jioh/services/runtimeconfig.googleapis.com [none]
+[debug] [2023-06-01T07:35:04.381Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/capston-jioh/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/capston-jioh
+[debug] [2023-06-01T07:35:05.576Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/capston-jioh/services/runtimeconfig.googleapis.com 200
+[debug] [2023-06-01T07:35:05.576Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/capston-jioh/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2023-06-01T07:35:05.577Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/capston-jioh/configs [none]

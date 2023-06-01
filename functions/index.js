@@ -1,4 +1,7 @@
 const functions = require("firebase-functions");
+// The Firebase Admin SDK to access Firestore.
+const admin = require("firebase-admin");
+admin.initializeApp();
 
 // // Create and deploy your first functions
 // // https://firebase.google.com/docs/functions/get-started
@@ -17,8 +20,8 @@ const agent = new https.Agent({
 
 exports.getCurrentWeather = functions.https.onCall(async (data, context) => {
   const {lat, lon} = data;
-  const apiKey = "81761cea11a6583c64a10a57912dfb98"; // OpenWeatherMap API 키 입력
-
+  // OpenWeatherMap API 키 입력
+  const apiKey = `${functions.config().openweathermap.api}`;
   // https://api.openweathermap.org/data/2.5/weather?lat=37.3003044128418&lon=126.83513641357422&appid=81761cea11a6583c64a10a57912dfb98
   try {
     const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`);
@@ -37,12 +40,14 @@ exports.getCurrentAirQuality = functions.https.onCall(async (data, context) => {
   const getNearestStation = async (data) => {
     const {address} = data;
     try {
-      // const key = "i2N0ECQ0aobXMXDIKKIY9e138bcnmhb+aukd5szMhiHmBV"+
-      // "k1iPMTXD3/ZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg==";
+      // const url = `https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/`+
+      // `getMsrstnList?serviceKey=`+
+      // `i2N0ECQ0aobXMXDIKKIY9e138bcnmhb%2Baukd5sz`+
+      // `MhiHmBVk1iPMTXD3%2FZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg%3D%3D`+
+      // `&returnType=json&numOfRows=1&pageNo=1&addr=${address}`;
       const url = `https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/`+
       `getMsrstnList?serviceKey=`+
-      `i2N0ECQ0aobXMXDIKKIY9e138bcnmhb%2Baukd5sz`+
-      `MhiHmBVk1iPMTXD3%2FZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg%3D%3D`+
+      `${functions.config().data_go_kr.api}`+
       `&returnType=json&numOfRows=1&pageNo=1&addr=${address}`;
       // const url = `https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/getMsrstnList`;
       const response = await axios.get(url, {httpsAgent: agent});
@@ -63,16 +68,20 @@ exports.getCurrentAirQuality = functions.https.onCall(async (data, context) => {
       return null;
     }
   };
-  // const apiKey = "i2N0ECQ0aobXMXDIKKIY9e138bcnmhb+aukd5szMhiHmBV"+
-  // "k1iPMTXD3/ZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg==";
+
   // const apiUrl = `http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty`; // 대기오염 정보 조회 서비스 API URL
   const stationName = await getNearestStation(data);
   const apiUrll = `https://apis.data.go.kr/B552584/`+
   `ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=`+
-  `i2N0ECQ0aobXMXDIKKIY9e138bcnmhb%2Baukd5sz`+
-  `MhiHmBVk1iPMTXD3%2FZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg%3D%3D`+
+  `${functions.config().data_go_kr.api}`+
   `&returnType=json&numOfRows=1&pageNo=1`+
   `&stationName=${stationName}&dataTerm=DAILY&ver=1.0`;
+  // const apiUrll = `https://apis.data.go.kr/B552584/`+
+  // `ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=`+
+  // `i2N0ECQ0aobXMXDIKKIY9e138bcnmhb%2Baukd5sz`+
+  // `MhiHmBVk1iPMTXD3%2FZYHWYjLmW1cMvmPCyUJiW7Hqic4lVg%3D%3D`+
+  // `&returnType=json&numOfRows=1&pageNo=1`+
+  // `&stationName=${stationName}&dataTerm=DAILY&ver=1.0`;
   try {
     const response = await axios.get(apiUrll, {httpsAgent: agent});
     // {
@@ -114,7 +123,7 @@ exports.sendImageToServer = functions.https.onCall(async (data, context) => {
       image: imageBase64,
     };
     // Send the JSON object to the server via HTTP POST request
-    const serverUrl = "http://218.101.195.205:5000/post";
+    const serverUrl = `${functions.config().myserver.url}`+`/post`;
     const response = await axios.post(serverUrl, imageData);
     const breed = response.data;
     // Return the response from the server to the client
@@ -137,7 +146,7 @@ exports.sendBase64ToServer = functions.https.onCall(async (data, context) => {
     //   image: imageBase64,
     // };
     // Send the JSON object to the server via HTTP POST request
-    const serverUrl = "http://218.101.195.205:5000/post";
+    const serverUrl = `${functions.config().myserver.url}`+`/post`;
     const response = await axios.post(serverUrl, data);
     const breed = response.data;
     // Return the response from the server to the client
@@ -155,33 +164,6 @@ exports.similarityCheck = functions.https.onCall(async (data, context) => {
   const targetImage = data.target_image;
   const queryImages = data.query_images || [];
   // 인터넷이미지 다운 후 base64 인코딩
-  // const encodeImageToBase64 = async (imageUrl) => {
-  //   try {
-  //     const options = {responseType: "arraybuffer"};
-  //     const response = await axios.get(imageUrl, options);
-  //     const buffer = Buffer.from(response.data, "binary");
-  //     const base64Data = buffer.toString("base64");
-  //     return base64Data;
-  //   } catch (error) {
-  //     console.error("Failed to encode image:", error);
-  //     return null;
-  //   }
-  // };
-  // const encodeImagesToBase64 = async (imageUrlList) => {
-  //   try {
-  //     const encodedImageList = await Promise.all(
-  //         imageUrlList.map(async (imageUrl) => {
-  //           const options = {responseType: "arraybuffer"};
-  //           const response = await axios.get(imageUrl, options);
-  //           const buffer = Buffer.from(response.data, "binary");
-  //           return buffer.toString("base64");
-  //         }));
-  //     return encodedImageList;
-  //   } catch (error) {
-  //     console.error(error);
-  //     return null;
-  //   }
-  // };
   const encodeToBase64 = async (data) => {
     try {
       const options = {responseType: "arraybuffer"};
@@ -218,7 +200,7 @@ exports.similarityCheck = functions.https.onCall(async (data, context) => {
     query_images: encodedList,
   };
   try {
-    const serverUrl = "http://218.101.195.205:5000/sim";
+    const serverUrl = `${functions.config().myserver.url}`+`/sim`;
     const response = await axios.post(serverUrl, sendingData);
     const similarArray = response.data;
     // Return the response from the server to the client
@@ -228,5 +210,48 @@ exports.similarityCheck = functions.https.onCall(async (data, context) => {
     console.error(error);
     throw new functions.https.HttpsError(
         "internal", "Failed to get response from AI server");
+  }
+});
+
+
+exports.expectedLocation = functions.https.onCall(async (data, context) => {
+  try {
+    const uid = data.uid;
+    const lastIndex = data.lastIndex;
+    const database = admin.database();
+    const ref = database.ref(`/route/${uid}`);
+    console.log("uid: ", uid);
+    let query;
+    if (lastIndex < 14) {
+      query = ref;
+    } else {
+      const start = lastIndex - 14;
+      const end = lastIndex;
+      console.log("start: ", start, "end: ", end);
+      query = ref.orderByKey().startAt(start.toString()).endAt(end.toString());
+    }
+    const snapshot = await query.once("value");
+    const countMap = {};
+    const promises = [];
+    snapshot.forEach((childSnapshot) => {
+      childSnapshot.forEach((grandChild) => {
+        const first = parseFloat(grandChild.child("first").val()).toFixed(4);
+        const second = parseFloat(grandChild.child("second").val()).toFixed(4);
+        const pair = [parseFloat(first), parseFloat(second)];
+        const pairStr = JSON.stringify(pair);
+        countMap[pairStr] = (countMap[pairStr] || 0) + 1; // 등장 횟수 계산
+        promises.push(Promise.resolve()); // 비동기 작업 Promise 추가
+      });
+    });
+    await Promise.all(promises);
+    const sortedPairs = Object.entries(countMap)
+        .sort((a, b) => b[1] - a[1]) // 등장 횟수에 따라 내림차순 정렬
+        .map(([pairStr, count]) => JSON.parse(pairStr));
+    const top5Pairs = sortedPairs.slice(0, 5); // 상위 5개 쌍 선택
+    console.log("TOP5PAIRS: ", top5Pairs);
+    return {top5Pairs};
+  } catch (error) {
+    console.error("Failed to fetch data:", error);
+    throw new functions.https.HttpsError("internal", "An error occurred");
   }
 });
